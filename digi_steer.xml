@@ -50,8 +50,7 @@
 
   <global>
     <parameter name="LCIOInputFiles">
-      <!--input.slcio-->
-      /afs/desy.de/user/y/ychinn/luxe/key4hep/LUXEDetector/run/dummyOutput.slcio
+      input.slcio
     </parameter>
     <parameter name="MaxRecordNumber" value="-1" />
     <parameter name="SkipNEvents" value="0" />
@@ -69,7 +68,7 @@
     <!--InitializeDD4hep reads a compact xml file and initializes the dd4hep::Detector object-->
     <!--Name of the DD4hep compact xml file to load-->
     <parameter name="DD4hepXMLFile" type="string">
-      /afs/desy.de/user/y/ychinn/luxe/key4hep/LUXEDetector/compact/LUXETracker.xml
+      ../luxegeo/compact/LUXETracker.xml
     </parameter>
     <!--Alternate name for EncodingStringParameterName-->
     <!--If given, the Compact File parameter of that name will be used as argument to LCTrackerCellID::set_encoding_string()-->
