@@ -10,7 +10,8 @@ mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=../install
 make install
-export MARLIN_DLL=$(echo ${MARLIN_DLL}':install/lib/libMarlinACTSTracking.so')
+cd ..
+export MARLIN_DLL=${MARLIN_DLL}${PWD}'/install/lib/libMarlinACTSTracking.so:'
 ```
 To run combinatorial Kalman Filter tracking:
 ```bash
@@ -32,7 +33,7 @@ cd ACTSTuple
 mkdir build
 cmake -S . -B build
 cmake --build build
-export MARLIN_DLL=$(echo ${MARLIN_DLL}':build/libACTSTuple.so')
+export MARLIN_DLL=${MARLIN_DLL}${PWD}'build/libACTSTuple.so:'
 ```
 Run with `MyACTSTuple` processor uncommented in `digi_steer.xml`
 

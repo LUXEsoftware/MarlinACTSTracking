@@ -31,7 +31,7 @@ href="http://ilcsoft.desy.de/marlin/marlin.xsl"?
    <processor name="MyTrackTruth"/>
 
     <!-- ==========  Output  ========== -->
-    <processor name="MyACTSTuple" />
+<!--    <processor name="MyACTSTuple" />-->
     <processor name="MyLCTuple" />
     <processor name="Output_REC"/>
   </execute>
