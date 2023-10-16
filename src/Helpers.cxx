@@ -36,105 +36,105 @@ std::string findFile(const std::string& inpath) {
   return inpath;
 }
 
-EVENT::Track* ACTS2Marlin_track(
-    const Acts::CombinatorialKalmanFilterResult<ACTSTracking::SourceLink>&
-        fitOutput,
-    std::size_t trackTip,
-    std::shared_ptr<Acts::MagneticFieldProvider> magneticField,
-    Acts::MagneticFieldProvider::Cache& magCache) {
-  IMPL::TrackImpl* track = new IMPL::TrackImpl;
-  Acts::MultiTrajectoryHelpers::TrajectoryState trajState =
-      Acts::MultiTrajectoryHelpers::trajectoryState(fitOutput.fittedStates,
-                                                    trackTip);
+// EVENT::Track* ACTS2Marlin_track(
+//     const Acts::CombinatorialKalmanFilterResult<ACTSTracking::SourceLink>&
+//         fitOutput,
+//     std::size_t trackTip,
+//     std::shared_ptr<Acts::MagneticFieldProvider> magneticField,
+//     Acts::MagneticFieldProvider::Cache& magCache) {
+//   IMPL::TrackImpl* track = new IMPL::TrackImpl;
+//   Acts::MultiTrajectoryHelpers::TrajectoryState trajState =
+//       Acts::MultiTrajectoryHelpers::trajectoryState(fitOutput.fittedStates,
+//                                                     trackTip);
 
-  //
-  // Fit state
-  track->setChi2(trajState.chi2Sum);
-  track->setNdf(trajState.NDF);
+//   //
+//   // Fit state
+//   track->setChi2(trajState.chi2Sum);
+//   track->setNdf(trajState.NDF);
 
-  // Track state at IP
-  static const Acts::Vector3 zeroPos(0, 0, 0);
-  Acts::Result<Acts::Vector3> fieldRes =
-      magneticField->getField(zeroPos, magCache);
-  if (!fieldRes.ok()) {
-    throw std::runtime_error("Field lookup error: " + fieldRes.error().value());
-  }
-  Acts::Vector3 field = *fieldRes;
+//   // Track state at IP
+//   static const Acts::Vector3 zeroPos(0, 0, 0);
+//   Acts::Result<Acts::Vector3> fieldRes =
+//       magneticField->getField(zeroPos, magCache);
+//   if (!fieldRes.ok()) {
+//     throw std::runtime_error("Field lookup error: " + fieldRes.error().value());
+//   }
+//   Acts::Vector3 field = *fieldRes;
 
-  const Acts::BoundTrackParameters& params =
-      fitOutput.fittedParameters.at(trackTip);
-  EVENT::TrackState* trackStateAtIP = ACTSTracking::ACTS2Marlin_trackState(
-      EVENT::TrackState::AtIP, params, field[2] / Acts::UnitConstants::T);
-  track->trackStates().push_back(trackStateAtIP);
+//   const Acts::BoundTrackParameters& params =
+//       fitOutput.fittedParameters.at(trackTip);
+//   EVENT::TrackState* trackStateAtIP = ACTSTracking::ACTS2Marlin_trackState(
+//       EVENT::TrackState::AtIP, params, field[2] / Acts::UnitConstants::T);
+//   track->trackStates().push_back(trackStateAtIP);
 
-  //
-  // Hits and associated track states
-  EVENT::TrackerHitVec hitsOnTrack;
-  EVENT::TrackStateVec statesOnTrack;
-  fitOutput.fittedStates.visitBackwards(
-      trackTip, [&](const Acts::MultiTrajectory<
-                    ACTSTracking::SourceLink>::ConstTrackStateProxy& state) {
-        // No measurement at this state
-        if (!state.typeFlags().test(Acts::TrackStateFlag::MeasurementFlag)) {
-          return true;
-        }
+//   //
+//   // Hits and associated track states
+//   EVENT::TrackerHitVec hitsOnTrack;
+//   EVENT::TrackStateVec statesOnTrack;
+//   fitOutput.fittedStates.visitBackwards(
+//       trackTip, [&](const Acts::MultiTrajectory<
+//                     ACTSTracking::SourceLink>::ConstTrackStateProxy& state) {
+//         // No measurement at this state
+//         if (!state.typeFlags().test(Acts::TrackStateFlag::MeasurementFlag)) {
+//           return true;
+//         }
 
-        // register all particles that generated this hit
-        EVENT::TrackerHit* myHit = state.uncalibrated().lciohit();
-        hitsOnTrack.push_back(myHit);
+//         // register all particles that generated this hit
+//         EVENT::TrackerHit* myHit = state.uncalibrated().lciohit();
+//         hitsOnTrack.push_back(myHit);
 
-        // Save track state information
-        const Acts::Vector3 hitPos(myHit->getPosition()[0],
-                                   myHit->getPosition()[1],
-                                   myHit->getPosition()[2]);
-        Acts::Result<Acts::Vector3> fieldRes =
-            magneticField->getField(hitPos, magCache);
-        if (!fieldRes.ok()) {
-          throw std::runtime_error("Field lookup error: " +
-                                   fieldRes.error().value());
-        }
-        Acts::Vector3 field = *fieldRes;
+//         // Save track state information
+//         const Acts::Vector3 hitPos(myHit->getPosition()[0],
+//                                    myHit->getPosition()[1],
+//                                    myHit->getPosition()[2]);
+//         Acts::Result<Acts::Vector3> fieldRes =
+//             magneticField->getField(hitPos, magCache);
+//         if (!fieldRes.ok()) {
+//           throw std::runtime_error("Field lookup error: " +
+//                                    fieldRes.error().value());
+//         }
+//         Acts::Vector3 field = *fieldRes;
 
-        EVENT::TrackState* trackState = ACTSTracking::ACTS2Marlin_trackState(
-            EVENT::TrackState::AtOther, state.smoothed(),
-            state.smoothedCovariance(), field[2] / Acts::UnitConstants::T);
-        statesOnTrack.push_back(trackState);
+//         EVENT::TrackState* trackState = ACTSTracking::ACTS2Marlin_trackState(
+//             EVENT::TrackState::AtOther, state.smoothed(),
+//             state.smoothedCovariance(), field[2] / Acts::UnitConstants::T);
+//         statesOnTrack.push_back(trackState);
 
-        return true;
-      });
+//         return true;
+//       });
 
-  // Reverse hits and states, above creates them backwards
-  std::reverse(hitsOnTrack.begin(), hitsOnTrack.end());
-  std::reverse(statesOnTrack.begin(), statesOnTrack.end());
+//   // Reverse hits and states, above creates them backwards
+//   std::reverse(hitsOnTrack.begin(), hitsOnTrack.end());
+//   std::reverse(statesOnTrack.begin(), statesOnTrack.end());
 
-  // Save hits
-  UTIL::CellIDDecoder<lcio::TrackerHit> decoder(
-      lcio::LCTrackerCellID::encoding_string());
-  EVENT::IntVec& subdetectorHitNumbers = track->subdetectorHitNumbers();
-  for (EVENT::TrackerHit* hit : hitsOnTrack) {
-    track->addHit(hit);
+//   // Save hits
+//   UTIL::CellIDDecoder<lcio::TrackerHit> decoder(
+//       lcio::LCTrackerCellID::encoding_string());
+//   EVENT::IntVec& subdetectorHitNumbers = track->subdetectorHitNumbers();
+//   for (EVENT::TrackerHit* hit : hitsOnTrack) {
+//     track->addHit(hit);
 
-    uint32_t sysid = decoder(hit)["system"];
-    if (subdetectorHitNumbers.size() <= sysid) {
-      subdetectorHitNumbers.resize(sysid + 1, 0);
-    }
-    subdetectorHitNumbers[sysid]++;
-  }
+//     uint32_t sysid = decoder(hit)["system"];
+//     if (subdetectorHitNumbers.size() <= sysid) {
+//       subdetectorHitNumbers.resize(sysid + 1, 0);
+//     }
+//     subdetectorHitNumbers[sysid]++;
+//   }
 
-  // Save the track states at hits
-  if (statesOnTrack.size() > 0) {
-    dynamic_cast<IMPL::TrackStateImpl*>(statesOnTrack.back())
-        ->setLocation(EVENT::TrackState::AtLastHit);
-    dynamic_cast<IMPL::TrackStateImpl*>(statesOnTrack.front())
-        ->setLocation(EVENT::TrackState::AtFirstHit);
-  }
+//   // Save the track states at hits
+//   if (statesOnTrack.size() > 0) {
+//     dynamic_cast<IMPL::TrackStateImpl*>(statesOnTrack.back())
+//         ->setLocation(EVENT::TrackState::AtLastHit);
+//     dynamic_cast<IMPL::TrackStateImpl*>(statesOnTrack.front())
+//         ->setLocation(EVENT::TrackState::AtFirstHit);
+//   }
 
-  EVENT::TrackStateVec& myTrackStates = track->trackStates();
-  myTrackStates.insert(myTrackStates.end(), statesOnTrack.begin(),
-                       statesOnTrack.end());
+//   EVENT::TrackStateVec& myTrackStates = track->trackStates();
+//   myTrackStates.insert(myTrackStates.end(), statesOnTrack.begin(),
+//                        statesOnTrack.end());
 
-  return track;
-}
+//   return track;
+// }
 
 EVENT::Track* ACTS2Marlin_track(
     const Acts::KalmanFitterResult<ACTSTracking::SourceLink>& fitOutput,
