@@ -68,9 +68,6 @@ ACTSKFTrackingProc::ACTSKFTrackingProc()
 
   // Input collections - mc particles, tracker hits and the relationships
   // between them
-  registerInputCollections(LCIO::TRACKERHITPLANE, "TrackerHitCollectionNames",
-                           "Name of the TrackerHit input collections.",
-                           _inputTrackerHitCollections, {});
 
   registerInputCollections(LCIO::TRACK, "TrackCollectionNames",
                            "Name of the Track input collections.",

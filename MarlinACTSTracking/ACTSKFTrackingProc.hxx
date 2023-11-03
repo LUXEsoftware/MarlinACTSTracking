@@ -52,9 +52,7 @@ class ACTSKFTrackingProc : public ACTSProcBase {
 
  protected:
   // Collection names for (in/out)put
-  std::vector<std::string> _inputTrackerHitCollections;
   std::vector<std::string> _inputTrackCollections;
-  std::string _outputSeedCollection;
   std::string _outputTrackCollection;
 
   // Run settings
@@ -67,10 +65,6 @@ class ACTSKFTrackingProc : public ACTSProcBase {
   double _initialTrackError_lambda;
   double _initialTrackError_time =
       100 * Acts::UnitConstants::ns;  // No Marlin default
-
-  // Seeding configuration
-  std::vector<std::string> _seedingLayers;
-  ACTSTracking::GeometryIdSelector _seedGeometrySelection;
 
   uint32_t _fitFails;
 };
